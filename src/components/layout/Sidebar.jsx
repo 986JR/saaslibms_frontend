@@ -85,8 +85,8 @@ export function Sidebar({ user }) {
             <Library size={16} className="text-white" />
           </div>
           <div>
-            <p className="text-sm font-bold text-text-primary font-display">LibraryOS</p>
-            <p className="text-xs text-text-secondary truncate max-w-[120px]">
+            <p className="text-sm font-bold text-text-primary font-display">BookSphere</p>
+            <p className="text-xs text-text-secondary truncate max-w-[160px]">
               {user?.institutionName || 'Management System'}
             </p>
           </div>

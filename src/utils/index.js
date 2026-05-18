@@ -5,6 +5,36 @@ export function cn(...classes) {
   return clsx(...classes)
 }
 
+export function decodeJwtPayload(token) {
+  if (!token) return null
+
+  try {
+    const payload = token.split('.')[1]
+    if (!payload) return null
+
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/')
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=')
+    const json = atob(padded)
+
+    return JSON.parse(json)
+  } catch {
+    return null
+  }
+}
+
+export function buildUserFromAccessToken(token) {
+  const payload = decodeJwtPayload(token)
+  if (!payload) return null
+
+  return {
+    publicId: payload.sub,
+    email: payload.email,
+    role: payload.role,
+    institutionId: payload.institutionId,
+    username: payload.email || 'User',
+  }
+}
+
 // Extract error message from backend ApiResponse
 export function getErrorMessage(error) {
   if (!error) return 'Something went wrong'

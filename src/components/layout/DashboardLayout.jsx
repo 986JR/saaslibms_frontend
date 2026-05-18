@@ -1,10 +1,21 @@
 import { Outlet, Navigate } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { useAuthStore } from '../../store/authStore'
-import { Building2, User } from 'lucide-react'
+import { Building2, Library } from 'lucide-react'
 
 export function DashboardLayout() {
-  const { accessToken, user } = useAuthStore()
+  const { accessToken, user, authChecked, authLoading } = useAuthStore()
+
+  if (authLoading || !authChecked) {
+    return (
+      <div className="min-h-screen bg-surface flex flex-col items-center justify-center gap-4">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-border shadow-card">
+          <Library size={22} className="text-primary" />
+        </div>
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-border border-t-primary" />
+      </div>
+    )
+  }
 
   if (!accessToken) {
     return <Navigate to="/login" replace />

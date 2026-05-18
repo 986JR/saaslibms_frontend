@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { useAuthStore } from '../store/authStore'
+import { buildUserFromAccessToken } from '../utils'
 
 const BASE_URL = '/api/v1'
 
@@ -9,6 +10,17 @@ export const api = axios.create({
   withCredentials: true, // needed for HttpOnly refresh cookie
   headers: { 'Content-Type': 'application/json' },
 })
+
+const refreshClient = axios.create({
+  baseURL: BASE_URL,
+  withCredentials: true,
+  headers: { 'Content-Type': 'application/json' },
+})
+
+export async function refreshAccessToken() {
+  const res = await refreshClient.post('/auth/refresh', {})
+  return res.data.data.accessToken
+}
 
 // Attach access token to every request
 api.interceptors.request.use((config) => {
@@ -35,15 +47,18 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const original = error.config
+    const isRefreshRequest = original?.url?.includes('/auth/refresh')
+    const isAuthRequest = original?.url?.startsWith('/auth/')
 
     // If 401 and we haven't already retried
-    if (error.response?.status === 401 && !original._retry) {
+    if (error.response?.status === 401 && original && !original._retry && !isRefreshRequest && !isAuthRequest) {
       if (isRefreshing) {
         // Queue the request while refresh is in progress
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject })
         })
           .then((token) => {
+            original.headers = original.headers || {}
             original.headers.Authorization = `Bearer ${token}`
             return api(original)
           })
@@ -55,14 +70,14 @@ api.interceptors.response.use(
 
       try {
         // Refresh using HttpOnly cookie (no body needed)
-        const res = await axios.post(
-          `${BASE_URL}/auth/refresh`,
-          {},
-          { withCredentials: true }
+        const newToken = await refreshAccessToken()
+        const authState = useAuthStore.getState()
+        authState.hydrateSession(
+          newToken,
+          authState.user || buildUserFromAccessToken(newToken)
         )
-        const newToken = res.data.data.accessToken
-        useAuthStore.getState().setAccessToken(newToken)
         processQueue(null, newToken)
+        original.headers = original.headers || {}
         original.headers.Authorization = `Bearer ${newToken}`
         return api(original)
       } catch (refreshError) {
@@ -92,7 +107,7 @@ export const authApi = {
   logout: () =>
     api.post('/auth/logout'),
   refresh: () =>
-    api.post('/auth/refresh'),
+    refreshClient.post('/auth/refresh'),
 }
 
 // ─── Users ───────────────────────────────────────────────────────────────────

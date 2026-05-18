@@ -66,7 +66,7 @@ export function RegisterPage() {
     }
   }
 
-  // ── Step 2 ────────────────────────────────────────────────────────────────
+  // Step 2
   async function handleStep2(e) {
     e.preventDefault()
     if (code.length !== 6) return setErrors({ code: 'Code must be 6 characters' })
@@ -86,7 +86,7 @@ export function RegisterPage() {
     }
   }
 
-  // ── Step 3 ────────────────────────────────────────────────────────────────
+  //  Step 3 
   async function handleStep3(e) {
     e.preventDefault()
     const errs = {}

@@ -9,14 +9,20 @@ import { PageHeader } from '../../components/layout/PageHeader'
 import { getErrorMessage, formatDate } from '../../utils'
 import toast from 'react-hot-toast'
 
+// ─── Form ────────────────────────────────────────────────────────────────────
+
 function UserForm({ initial, onSubmit, loading }) {
-  const [form, setForm] = useState(initial || { username: '', email: '', password: '', role: 'LIBRARIAN' })
+  const [form, setForm] = useState(
+    initial
+      ? { username: initial.username, email: initial.email, role: initial.role }
+      : { username: '', email: '', password: '', role: 'LIBRARIAN' }
+  )
   const [errors, setErrors] = useState({})
 
   function update(e) {
     const { name, value } = e.target
-    setForm(p => ({ ...p, [name]: value }))
-    if (errors[name]) setErrors(p => ({ ...p, [name]: '' }))
+    setForm(prev => ({ ...prev, [name]: value }))
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }))
   }
 
   function handleSubmit(e) {
@@ -31,10 +37,33 @@ function UserForm({ initial, onSubmit, loading }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <Input label="Username *" name="username" value={form.username} onChange={update} error={errors.username} placeholder="john.librarian" />
-      <Input label="Email *" name="email" type="email" value={form.email} onChange={update} error={errors.email} placeholder="john@library.ac.tz" />
+      <Input
+        label="Username *"
+        name="username"
+        value={form.username}
+        onChange={update}
+        error={errors.username}
+        placeholder="john.librarian"
+      />
+      <Input
+        label="Email *"
+        name="email"
+        type="email"
+        value={form.email}
+        onChange={update}
+        error={errors.email}
+        placeholder="john@library.ac.tz"
+      />
       {!initial && (
-        <Input label="Password *" name="password" type="password" value={form.password} onChange={update} error={errors.password} placeholder="••••••••" />
+        <Input
+          label="Password *"
+          name="password"
+          type="password"
+          value={form.password}
+          onChange={update}
+          error={errors.password}
+          placeholder="••••••••"
+        />
       )}
       <Select label="Role" name="role" value={form.role} onChange={update}>
         <option value="LIBRARIAN">Librarian</option>
@@ -46,6 +75,15 @@ function UserForm({ initial, onSubmit, loading }) {
     </form>
   )
 }
+
+// ─── Status badge helper ──────────────────────────────────────────────────────
+
+function StatusBadge({ status }) {
+  const color = status === 'ACTIVE' ? 'green' : 'red'
+  return <Badge color={color}>{status}</Badge>
+}
+
+// ─── Page ────────────────────────────────────────────────────────────────────
 
 export function UsersPage() {
   const qc = useQueryClient()
@@ -59,52 +97,112 @@ export function UsersPage() {
     queryFn: () => usersApi.list({ page, size: 10 }),
   })
 
-  const users = data?.data?.data?.content || []
-  const totalPages = data?.data?.data?.totalPages || 0
-  const totalElements = data?.data?.data?.totalElements || 0
+  /*
+   * Your API returns:
+   *   { success, message, data: [ ...users ], timestamp }
+   *
+   * axios wraps this in its own `data`, so the full shape is:
+   *   response.data  →  { success, message, data: [...], timestamp }
+   *   response.data.data  →  the array of users
+   *
+   * If your API later switches to a Spring Page object, swap this to:
+   *   const users      = data?.data?.data?.content || []
+   *   const totalPages = data?.data?.data?.totalPages || 0
+   */
+  const users = data?.data?.data || []          // plain array from your API
+  const totalElements = users.length            // no server-side pagination yet
+
+  // If your backend returns a Spring Page object in the future, use these instead:
+  // const users        = data?.data?.data?.content     || []
+  // const totalPages   = data?.data?.data?.totalPages  || 0
+  // const totalElements = data?.data?.data?.totalElements || 0
+  const totalPages = 0  // set to real value when backend paginates
+
+  // ── Mutations ──────────────────────────────────────────────────────────────
 
   const createMutation = useMutation({
     mutationFn: usersApi.create,
-    onSuccess: () => { toast.success('Staff user created'); qc.invalidateQueries(['users']); setShowAdd(false) },
+    onSuccess: () => {
+      toast.success('Staff user created')
+      qc.invalidateQueries(['users'])
+      setShowAdd(false)
+    },
     onError: (err) => toast.error(getErrorMessage(err)),
   })
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => usersApi.update(id, data),
-    onSuccess: () => { toast.success('User updated'); qc.invalidateQueries(['users']); setEditing(null) },
+    onSuccess: () => {
+      toast.success('User updated')
+      qc.invalidateQueries(['users'])
+      setEditing(null)
+    },
     onError: (err) => toast.error(getErrorMessage(err)),
   })
 
   const deleteMutation = useMutation({
     mutationFn: usersApi.delete,
-    onSuccess: () => { toast.success('User removed'); qc.invalidateQueries(['users']); setDeleting(null) },
+    onSuccess: () => {
+      toast.success('User removed')
+      qc.invalidateQueries(['users'])
+      setDeleting(null)
+    },
     onError: (err) => toast.error(getErrorMessage(err)),
   })
+
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <div>
       <PageHeader
         title="Staff Users"
-        subtitle={`${totalElements} users — Admins and Librarians`}
-        action={<Button icon={<Plus size={15} />} onClick={() => setShowAdd(true)}>Add user</Button>}
+        subtitle={`${totalElements} user${totalElements !== 1 ? 's' : ''} — Admins and Librarians`}
+        action={
+          <Button icon={<Plus size={15} />} onClick={() => setShowAdd(true)}>
+            Add user
+          </Button>
+        }
       />
 
       <Card className="p-0 overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-surface">
-              {['User', 'Email', 'Role', 'Joined', ''].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">{h}</th>
+              {['User', 'Email', 'Role', 'Status', ''].map(h => (
+                <th
+                  key={h}
+                  className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide"
+                >
+                  {h}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {isLoading
-              ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={5} />)
-              : users.length === 0
-              ? <tr><td colSpan={5}><EmptyState icon={<Users size={22} />} title="No staff users" description="Create accounts for librarians and admins." action={<Button size="sm" onClick={() => setShowAdd(true)} icon={<Plus size={13} />}>Add user</Button>} /></td></tr>
-              : users.map(u => (
-                <tr key={u.publicId} className="border-b border-border hover:bg-surface/60 transition-colors">
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={5} />)
+            ) : users.length === 0 ? (
+              <tr>
+                <td colSpan={5}>
+                  <EmptyState
+                    icon={<Users size={22} />}
+                    title="No staff users"
+                    description="Create accounts for librarians and admins."
+                    action={
+                      <Button size="sm" onClick={() => setShowAdd(true)} icon={<Plus size={13} />}>
+                        Add user
+                      </Button>
+                    }
+                  />
+                </td>
+              </tr>
+            ) : (
+              users.map(u => (
+                <tr
+                  key={u.publicId}
+                  className="border-b border-border hover:bg-surface/60 transition-colors"
+                >
+                  {/* Avatar + username */}
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">
                       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-white text-xs font-bold">
@@ -113,35 +211,73 @@ export function UsersPage() {
                       <span className="font-medium text-text-primary">{u.username}</span>
                     </div>
                   </td>
+
+                  {/* Email */}
                   <td className="px-4 py-3 text-text-secondary">{u.email}</td>
+
+                  {/* Role */}
                   <td className="px-4 py-3">
                     <Badge color={u.role === 'ADMIN' ? 'primary' : 'blue'}>{u.role}</Badge>
                   </td>
-                  <td className="px-4 py-3 text-text-secondary">{formatDate(u.createdAt)}</td>
+
+                  {/* Status — field exists in your API response */}
+                  <td className="px-4 py-3">
+                    <StatusBadge status={u.status} />
+                  </td>
+
+                  {/* Actions */}
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1.5">
-                      <button onClick={() => setEditing(u)} className="p-1.5 rounded-lg text-text-secondary hover:text-primary hover:bg-primary-50 transition-colors"><Pencil size={14} /></button>
-                      <button onClick={() => setDeleting(u)} className="p-1.5 rounded-lg text-text-secondary hover:text-danger hover:bg-red-50 transition-colors"><Trash2 size={14} /></button>
+                      <button
+                        onClick={() => setEditing(u)}
+                        className="p-1.5 rounded-lg text-text-secondary hover:text-primary hover:bg-primary-50 transition-colors"
+                        title="Edit user"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        onClick={() => setDeleting(u)}
+                        className="p-1.5 rounded-lg text-text-secondary hover:text-danger hover:bg-red-50 transition-colors"
+                        title="Remove user"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
                   </td>
                 </tr>
               ))
-            }
+            )}
           </tbody>
         </table>
-        <div className="px-4 pb-4">
-          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
-        </div>
+
+        {/* Only show pagination if the backend supports it */}
+        {totalPages > 1 && (
+          <div className="px-4 pb-4">
+            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+          </div>
+        )}
       </Card>
 
+      {/* Create modal */}
       <Modal open={showAdd} onClose={() => setShowAdd(false)} title="Create staff user">
-        <UserForm onSubmit={d => createMutation.mutate(d)} loading={createMutation.isPending} />
+        <UserForm
+          onSubmit={d => createMutation.mutate(d)}
+          loading={createMutation.isPending}
+        />
       </Modal>
 
+      {/* Edit modal */}
       <Modal open={!!editing} onClose={() => setEditing(null)} title="Edit user">
-        {editing && <UserForm initial={editing} onSubmit={d => updateMutation.mutate({ id: editing.publicId, data: d })} loading={updateMutation.isPending} />}
+        {editing && (
+          <UserForm
+            initial={editing}
+            onSubmit={d => updateMutation.mutate({ id: editing.publicId, data: d })}
+            loading={updateMutation.isPending}
+          />
+        )}
       </Modal>
 
+      {/* Delete confirmation */}
       <ConfirmDialog
         open={!!deleting}
         onClose={() => setDeleting(null)}

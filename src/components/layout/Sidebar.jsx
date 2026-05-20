@@ -12,8 +12,8 @@ import {
   LogOut,
   Menu,
   X,
-  ChevronRight,
   Library,
+  Link2,         // ← new icon for Book-Author Links
 } from 'lucide-react'
 import { cn } from '../../utils'
 import { useAuthStore } from '../../store/authStore'
@@ -21,13 +21,14 @@ import { authApi } from '../../api'
 import toast from 'react-hot-toast'
 
 const navItems = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/books', icon: BookOpen, label: 'Books' },
-  { to: '/authors', icon: PenLine, label: 'Authors' },
-  { to: '/categories', icon: Tags, label: 'Categories' },
-  { to: '/members', icon: UserCheck, label: 'Members' },
-  { to: '/loans', icon: BookMarked, label: 'Loans' },
-  { to: '/reservations', icon: CalendarClock, label: 'Reservations' },
+  { to: '/dashboard',    icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/books',        icon: BookOpen,        label: 'Books' },
+  { to: '/authors',      icon: PenLine,         label: 'Authors' },
+  { to: '/book-authors', icon: Link2,           label: 'Book-Author Links' }, // ← added
+  { to: '/categories',   icon: Tags,            label: 'Categories' },
+  { to: '/members',      icon: UserCheck,       label: 'Members' },
+  { to: '/loans',        icon: BookMarked,      label: 'Loans' },
+  { to: '/reservations', icon: CalendarClock,   label: 'Reservations' },
 ]
 
 const adminOnlyItems = [

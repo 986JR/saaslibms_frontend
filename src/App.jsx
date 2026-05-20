@@ -12,6 +12,7 @@ import { ReservationsPage } from './pages/reservations/ReservationsPage'
 import { UsersPage } from './pages/users/UsersPage'
 import { NotFoundPage } from './pages/errors'
 import { AuthInitializer } from './components/AuthInitializer'
+import { BookAuthorsPage } from './pages/book-authors/BookAuthorsPage'
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/books" element={<BooksPage />} />
             <Route path="/authors" element={<AuthorsPage />} />
+            <Route path="/book-authors" element={<BookAuthorsPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/members" element={<MembersPage />} />
             <Route path="/loans" element={<LoansPage />} />

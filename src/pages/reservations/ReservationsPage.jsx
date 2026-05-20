@@ -4,15 +4,12 @@ import { Plus, CalendarClock, X } from 'lucide-react'
 import { reservationsApi, membersApi, booksApi } from '../../api'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
-import { Select, Modal, ConfirmDialog, EmptyState, SkeletonRow, Pagination, Card, Badge } from '../../components/ui'
+import { Select, Modal, EmptyState, SkeletonRow, Pagination, Card, Badge } from '../../components/ui'
 import { PageHeader } from '../../components/layout/PageHeader'
 import { getErrorMessage, formatDate, statusColors } from '../../utils'
 import toast from 'react-hot-toast'
 
 // ─── SearchDropdown ───────────────────────────────────────────────────────────
-//
-// Generic dropdown that shows a primary label and a secondary detail line.
-// Rendered below whichever Input it follows.
 
 function SearchDropdown({ options, onSelect, keyField, labelField, detailField }) {
   if (!options.length) return null
@@ -36,38 +33,31 @@ function SearchDropdown({ options, onSelect, keyField, labelField, detailField }
 // ─── ReservationForm ──────────────────────────────────────────────────────────
 
 function ReservationForm({ onSubmit, loading }) {
-  const [form, setForm]               = useState({ memberPublicId: '', bookPublicId: '' })
-  const [memberSearch, setMemberSearch] = useState('')
-  const [bookSearch, setBookSearch]   = useState('')
-  const [selectedMember, setSelectedMember] = useState(null)  // track chosen member
-  const [selectedBook, setSelectedBook]     = useState(null)  // track chosen book
-  const [errors, setErrors]           = useState({})
+  const [form, setForm]                     = useState({ memberPublicId: '', bookPublicId: '' })
+  const [memberSearch, setMemberSearch]     = useState('')
+  const [bookSearch, setBookSearch]         = useState('')
+  const [selectedMember, setSelectedMember] = useState(null)
+  const [selectedBook, setSelectedBook]     = useState(null)
+  const [errors, setErrors]                 = useState({})
 
-  // Search members — needs at least 2 chars
   const { data: membersData } = useQuery({
     queryKey: ['members', { search: memberSearch }],
     queryFn: () => membersApi.list({ search: memberSearch || undefined, size: 20 }),
-    enabled: memberSearch.length > 1 && !selectedMember,  // stop searching once picked
+    enabled: memberSearch.length > 1 && !selectedMember,
   })
 
-  // Search books — needs at least 2 chars
   const { data: booksData } = useQuery({
     queryKey: ['books', { search: bookSearch }],
     queryFn: () => booksApi.list({ search: bookSearch || undefined, size: 20 }),
     enabled: bookSearch.length > 1 && !selectedBook,
   })
 
-  //
-  // Members API returns fullName (not name).
-  // Books   API returns title.
-  //
   const memberOptions = selectedMember ? [] : (membersData?.data?.data?.content ?? [])
   const bookOptions   = selectedBook   ? [] : (booksData?.data?.data?.content   ?? [])
 
   function handleSelectMember(m) {
     setSelectedMember(m)
     setForm(prev => ({ ...prev, memberPublicId: m.publicId }))
-    // Show "Full Name (MEMBER-XXXXXX)" in the input so the user sees both
     setMemberSearch(`${m.fullName} (${m.publicId})`)
     if (errors.memberPublicId) setErrors(prev => ({ ...prev, memberPublicId: '' }))
   }
@@ -75,7 +65,6 @@ function ReservationForm({ onSubmit, loading }) {
   function handleSelectBook(b) {
     setSelectedBook(b)
     setForm(prev => ({ ...prev, bookPublicId: b.publicId }))
-    // Show "Title (BOOK-XXXXXX)" in the input
     setBookSearch(`${b.title} (${b.publicId})`)
     if (errors.bookPublicId) setErrors(prev => ({ ...prev, bookPublicId: '' }))
   }
@@ -103,8 +92,6 @@ function ReservationForm({ onSubmit, loading }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-
-      {/* Member search */}
       <div>
         <div className="relative">
           <Input
@@ -113,11 +100,9 @@ function ReservationForm({ onSubmit, loading }) {
             value={memberSearch}
             onChange={e => {
               setMemberSearch(e.target.value)
-              // If user edits the field after picking, clear the selection
               if (selectedMember) clearMember()
             }}
           />
-          {/* Clear button shown after a member is picked */}
           {selectedMember && (
             <button
               type="button"
@@ -129,7 +114,6 @@ function ReservationForm({ onSubmit, loading }) {
             </button>
           )}
         </div>
-        {/* Dropdown — shows fullName as the primary label, email as detail */}
         <SearchDropdown
           options={memberOptions}
           onSelect={handleSelectMember}
@@ -142,7 +126,6 @@ function ReservationForm({ onSubmit, loading }) {
         )}
       </div>
 
-      {/* Book search */}
       <div>
         <div className="relative">
           <Input
@@ -165,7 +148,6 @@ function ReservationForm({ onSubmit, loading }) {
             </button>
           )}
         </div>
-        {/* Dropdown — shows title as primary label, publicId as detail */}
         <SearchDropdown
           options={bookOptions}
           onSelect={handleSelectBook}
@@ -185,14 +167,99 @@ function ReservationForm({ onSubmit, loading }) {
   )
 }
 
+// ─── CancelReservationModal ───────────────────────────────────────────────────
+//
+// Replaces the simple ConfirmDialog so the librarian can type a reason before
+// the PATCH request is sent.  The `reason` field is required.
+
+function CancelReservationModal({ reservation, onClose, onConfirm, loading }) {
+  const [reason, setReason] = useState('')
+  const [error, setError]   = useState('')
+
+  function handleClose() {
+    setReason('')
+    setError('')
+    onClose()
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault()
+    if (!reason.trim()) {
+      setError('Please provide a reason for cancellation')
+      return
+    }
+    setError('')
+    onConfirm(reason.trim())
+  }
+
+  return (
+    <Modal open={!!reservation} onClose={handleClose} title="Cancel reservation">
+      {reservation && (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Reservation summary */}
+          <div className="rounded-xl border border-border bg-surface p-3 text-sm space-y-0.5">
+            <p className="font-medium text-text-primary">{reservation.bookTitle}</p>
+            <p className="text-text-secondary">Reserved by {reservation.memberName}</p>
+            {reservation.queuePosition != null && (
+              <p className="text-xs text-text-secondary pt-1">
+                Queue position:{' '}
+                <span className="font-semibold text-text-primary">
+                  #{reservation.queuePosition}
+                </span>
+              </p>
+            )}
+          </div>
+
+          {/* Reason textarea */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-text-primary">
+              Cancellation reason <span className="text-danger">*</span>
+            </label>
+            <textarea
+              rows={3}
+              value={reason}
+              onChange={e => {
+                setReason(e.target.value)
+                if (error) setError('')
+              }}
+              placeholder="e.g. Member requested cancellation, book no longer available…"
+              className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none transition-colors"
+            />
+            {error && <p className="text-xs text-danger">{error}</p>}
+          </div>
+
+          <div className="flex gap-2 pt-1">
+            <Button
+              type="button"
+              variant="secondary"
+              className="flex-1"
+              onClick={handleClose}
+              disabled={loading}
+            >
+              Go back
+            </Button>
+            <Button
+              type="submit"
+              loading={loading}
+              className="flex-1 !bg-danger hover:!bg-danger/90"
+            >
+              Confirm cancellation
+            </Button>
+          </div>
+        </form>
+      )}
+    </Modal>
+  )
+}
+
 // ─── ReservationsPage ─────────────────────────────────────────────────────────
 
 export function ReservationsPage() {
   const qc = useQueryClient()
-  const [page, setPage]             = useState(0)
+  const [page, setPage]                 = useState(0)
   const [statusFilter, setStatusFilter] = useState('')
-  const [showAdd, setShowAdd]       = useState(false)
-  const [cancelling, setCancelling] = useState(null)
+  const [showAdd, setShowAdd]           = useState(false)
+  const [cancelling, setCancelling]     = useState(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['reservations', { page, status: statusFilter }],
@@ -213,8 +280,9 @@ export function ReservationsPage() {
     onError: (err) => toast.error(getErrorMessage(err)),
   })
 
+  // PATCH /api/v1/reservations/{publicId}/cancel  body: { reason }
   const cancelMutation = useMutation({
-    mutationFn: (id) => reservationsApi.cancel(id),
+    mutationFn: ({ publicId, reason }) => reservationsApi.cancel(publicId, { reason }),
     onSuccess: () => {
       toast.success('Reservation cancelled')
       qc.invalidateQueries(['reservations'])
@@ -254,7 +322,10 @@ export function ReservationsPage() {
           <thead>
             <tr className="border-b border-border bg-surface">
               {['Book', 'Member', 'Queue', 'Status', 'Created', ''].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+                <th
+                  key={h}
+                  className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide"
+                >
                   {h}
                 </th>
               ))}
@@ -280,8 +351,13 @@ export function ReservationsPage() {
               </tr>
             ) : (
               reservations.map(r => (
-                <tr key={r.publicId} className="border-b border-border hover:bg-surface/60 transition-colors">
-                  <td className="px-4 py-3 font-medium text-text-primary max-w-[160px] truncate">{r.bookTitle}</td>
+                <tr
+                  key={r.publicId}
+                  className="border-b border-border hover:bg-surface/60 transition-colors"
+                >
+                  <td className="px-4 py-3 font-medium text-text-primary max-w-[160px] truncate">
+                    {r.bookTitle}
+                  </td>
                   <td className="px-4 py-3 text-text-secondary">{r.memberName}</td>
                   <td className="px-4 py-3">
                     <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-surface text-xs font-bold text-text-primary border border-border">
@@ -289,11 +365,16 @@ export function ReservationsPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <Badge color={statusColors?.[r.status] ?? 'gray'}>{r.status}</Badge>
+                    <Badge color={statusColors?.[r.status?.toUpperCase()] ?? 'gray'}>
+                      {r.status}
+                    </Badge>
                   </td>
-                  <td className="px-4 py-3 text-text-secondary whitespace-nowrap">{formatDate(r.createdAt)}</td>
+                  <td className="px-4 py-3 text-text-secondary whitespace-nowrap">
+                    {formatDate(r.createdAt)}
+                  </td>
                   <td className="px-4 py-3">
-                    {(r.status === 'PENDING' || r.status === 'FULFILLED') && (
+                    {(r.status?.toUpperCase() === 'PENDING' ||
+                      r.status?.toUpperCase() === 'FULFILLED') && (
                       <button
                         onClick={() => setCancelling(r)}
                         className="p-1.5 rounded-lg text-text-secondary hover:text-danger hover:bg-red-50 transition-colors"
@@ -326,15 +407,14 @@ export function ReservationsPage() {
         )}
       </Modal>
 
-      {/* Cancel confirmation */}
-      <ConfirmDialog
-        open={!!cancelling}
+      {/* Cancel reservation modal — collects reason before confirming */}
+      <CancelReservationModal
+        reservation={cancelling}
         onClose={() => setCancelling(null)}
-        onConfirm={() => cancelMutation.mutate(cancelling.publicId)}
+        onConfirm={(reason) =>
+          cancelMutation.mutate({ publicId: cancelling.publicId, reason })
+        }
         loading={cancelMutation.isPending}
-        title="Cancel reservation"
-        message={`Cancel the reservation for "${cancelling?.bookTitle}" by ${cancelling?.memberName}?`}
-        confirmLabel="Cancel reservation"
       />
     </div>
   )

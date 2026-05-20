@@ -138,13 +138,13 @@ export const authorsApi = {
 }
 
 // ─── Book-Authors ─────────────────────────────────────────────────────────────
-export const bookAuthorsApi = {
-  getByBook: (bookId) => api.get(`/book-authors/book/${bookId}`),
-  getByAuthor: (authorId) => api.get(`/book-authors/author/${authorId}`),
-  link: (data) => api.post('/book-authors', data),
-  update: (id, data) => api.patch(`/book-authors/${id}`, data),
-  unlink: (id) => api.delete(`/book-authors/${id}`),
-}
+// export const bookAuthorsApi = {
+//   getByBook: (bookId) => api.get(`/book-authors/book/${bookId}`),
+//   getByAuthor: (authorId) => api.get(`/book-authors/author/${authorId}`),
+//   link: (data) => api.post('/book-authors', data),
+//   update: (id, data) => api.patch(`/book-authors/${id}`, data),
+//   unlink: (id) => api.delete(`/book-authors/${id}`),
+// }
 
 // ─── Categories ───────────────────────────────────────────────────────────────
 export const categoriesApi = {
@@ -181,5 +181,16 @@ export const reservationsApi = {
   list: (params) => api.get('/reservations', { params }),
   get: (id) => api.get(`/reservations/${id}`),
   create: (data) => api.post('/reservations', data),
-  cancel: (id) => api.patch(`/reservations/${id}/cancel`),
+  cancel: (id, data) => api.patch(`/reservations/${id}/cancel`, data),
+} 
+
+
+// ─── Book-Author Links ────────────────────────────────────────────────────────
+// ─── Book-Author Links ────────────────────────────────────────────────────────
+export const bookAuthorsApi = {
+  create: (data)       => api.post('/book-authors', data),
+  getByBook: (id)      => api.get(`/book-authors/by-book/${id}`),
+  getByAuthor: (id)    => api.get(`/book-authors/by-author/${id}`),
+  update: (id, data)   => api.patch(`/book-authors/${id}`, data),
+  delete: (id)         => api.delete(`/book-authors/${id}`),
 }

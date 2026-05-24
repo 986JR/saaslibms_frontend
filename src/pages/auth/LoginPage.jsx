@@ -625,7 +625,23 @@ const css = `
   @keyframes lp-spin {
     from { transform: rotate(0deg); }
     to   { transform: rotate(360deg); }
+  } 
+
+  /* ── Forgot password link ── */
+  .lp-forgot-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: -6px;
+    margin-bottom: 16px;
   }
+  .lp-forgot-link {
+    font-size: 13px;
+    color: var(--green-700);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color .15s;
+  }
+  .lp-forgot-link:hover { color: var(--green-900); }
 `
 
 /* ─── useIntersectionObserver hook ─────────────────────────────────── */
@@ -1337,7 +1353,8 @@ export function LoginPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       autoComplete="email"
-                    />
+                    /> 
+
                   </div>
                 </div>
 
@@ -1362,6 +1379,15 @@ export function LoginPage() {
                   </div>
                 </div>
 
+<div className="lp-forgot-row">
+  <Link
+    to="/forgot-password"
+    className="lp-forgot-link"
+    onClick={() => setShowLogin(false)}
+  >
+    Forgot password?
+  </Link>
+</div>
                 <button type="submit" className="lp-submit-btn" disabled={loginLoading}>
                   {loginLoading ? (
                     <><Loader2 size={18} className="lp-spinner" /> Signing in…</>

@@ -1,6 +1,9 @@
 import axios from 'axios'
 import { useAuthStore } from '../store/authStore'
 import { buildUserFromAccessToken } from '../utils'
+// import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage'
+// import { ResetPasswordPage }  from './pages/auth/ResetPasswordPage'
+
 
 const BASE_URL = '/api/v1'
 
@@ -108,6 +111,8 @@ export const authApi = {
     api.post('/auth/logout'),
   refresh: () =>
     refreshClient.post('/auth/refresh'),
+  forgotPassword: (data)        => api.post('/auth/forgot-password', data),
+  resetPassword:  (token, data) => api.post(`/auth/reset-password?token=${token}`, data),
 }
 
 // ─── Users ───────────────────────────────────────────────────────────────────
@@ -193,4 +198,4 @@ export const bookAuthorsApi = {
   getByAuthor: (id)    => api.get(`/book-authors/by-author/${id}`),
   update: (id, data)   => api.patch(`/book-authors/${id}`, data),
   delete: (id)         => api.delete(`/book-authors/${id}`),
-}
+} 

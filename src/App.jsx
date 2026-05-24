@@ -13,6 +13,8 @@ import { UsersPage } from './pages/users/UsersPage'
 import { NotFoundPage } from './pages/errors'
 import { AuthInitializer } from './components/AuthInitializer'
 import { BookAuthorsPage } from './pages/book-authors/BookAuthorsPage'
+import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage'
+import { ResetPasswordPage }  from './pages/auth/ResetPasswordPage'
 
 export default function App() {
   return (
@@ -39,7 +41,13 @@ export default function App() {
           {/* Redirects */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<NotFoundPage />} />
-        </Routes>
+
+          {/* Public */}
+<Route path="/login" element={<LoginPage />} />
+<Route path="/register" element={<RegisterPage />} />
+<Route path="/forgot-password" element={<ForgotPasswordPage />} />
+<Route path="/reset-password"  element={<ResetPasswordPage />} />
+        </Routes> 
       </BrowserRouter>
     </AuthInitializer>
   )

@@ -199,3 +199,8 @@ export const bookAuthorsApi = {
   update: (id, data)   => api.patch(`/book-authors/${id}`, data),
   delete: (id)         => api.delete(`/book-authors/${id}`),
 } 
+
+// ─── Audit Logs ───────────────────────────────────────────────────────────────
+export const auditLogsApi = {
+  list: (params) => api.get('/audit-logs', { params }),
+}

@@ -10,6 +10,7 @@ import { MembersPage } from './pages/members/MembersPage'
 import { LoansPage } from './pages/loans/LoansPage'
 import { ReservationsPage } from './pages/reservations/ReservationsPage'
 import { UsersPage } from './pages/users/UsersPage'
+import { AuditLogsPage } from './pages/audit-logs/AuditLogsPage'
 import { NotFoundPage } from './pages/errors'
 import { AuthInitializer } from './components/AuthInitializer'
 import { BookAuthorsPage } from './pages/book-authors/BookAuthorsPage'
@@ -36,6 +37,7 @@ export default function App() {
             <Route path="/loans" element={<LoansPage />} />
             <Route path="/reservations" element={<ReservationsPage />} />
             <Route path="/users" element={<UsersPage />} />
+            <Route path="/audit-logs" element={<AuditLogsPage />} />
           </Route>
 
           {/* Redirects */}

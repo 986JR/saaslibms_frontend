@@ -14,6 +14,7 @@ import {
   X,
   Library,
   Link2,         // ← new icon for Book-Author Links
+  ClipboardList,
 } from 'lucide-react'
 import { cn } from '../../utils'
 import { useAuthStore } from '../../store/authStore'
@@ -33,6 +34,7 @@ const navItems = [
 
 const adminOnlyItems = [
   { to: '/users', icon: Users, label: 'Staff Users' },
+  { to: '/audit-logs', icon: ClipboardList, label: 'Audit Logs' },
 ]
 
 function NavItem({ to, icon: Icon, label, onClick }) {

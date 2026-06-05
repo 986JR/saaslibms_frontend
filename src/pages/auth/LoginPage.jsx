@@ -844,10 +844,9 @@ export function LoginPage() {
     try {
       const res = await authApi.login({ email, password })
       const { accessToken, user: rawUser } = res.data.data
-      // Normalize: backend sends "Username" (capital U), frontend uses "username"
       const user = {
         ...rawUser,
-        username: rawUser.Username || rawUser.username,
+        username: rawUser?.username || rawUser?.Username || rawUser?.name || 'User',
       }
       authLogin(accessToken, user)
       setShowLogin(false)

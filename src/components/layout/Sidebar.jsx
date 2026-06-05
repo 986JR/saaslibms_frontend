@@ -15,6 +15,7 @@ import {
   Library,
   Link2,         // ← new icon for Book-Author Links
   ClipboardList,
+  Building2,
 } from 'lucide-react'
 import { cn } from '../../utils'
 import { useAuthStore } from '../../store/authStore'
@@ -34,6 +35,13 @@ const navItems = [
 
 const adminOnlyItems = [
   { to: '/users', icon: Users, label: 'Staff Users' },
+  { to: '/audit-logs', icon: ClipboardList, label: 'Audit Logs' },
+]
+
+const systemOnlyItems = [
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/system/institutions', icon: Building2, label: 'Institutions' },
+  { to: '/system/users', icon: Users, label: 'All Users' },
   { to: '/audit-logs', icon: ClipboardList, label: 'Audit Logs' },
 ]
 
@@ -67,6 +75,7 @@ export function Sidebar({ user }) {
   const navigate = useNavigate()
 
   const isAdmin = user?.role === 'ADMIN'
+  const isSystem = user?.role === 'SYSTEM'
 
   async function handleLogout() {
     try {
@@ -98,18 +107,35 @@ export function Sidebar({ user }) {
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-0.5">
-        {navItems.map((item) => (
-          <NavItem key={item.to} {...item} onClick={onNav} />
-        ))}
+        {!isSystem && (
+          <>
+            {navItems.map((item) => (
+              <NavItem key={item.to} {...item} onClick={onNav} />
+            ))}
 
-        {isAdmin && (
+            {isAdmin && (
+              <>
+                <div className="my-3 px-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-text-secondary">
+                    Administration
+                  </p>
+                </div>
+                {adminOnlyItems.map((item) => (
+                  <NavItem key={item.to} {...item} onClick={onNav} />
+                ))}
+              </>
+            )}
+          </>
+        )}
+
+        {isSystem && (
           <>
             <div className="my-3 px-3">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-text-secondary">
-                Administration
+                System Administration
               </p>
             </div>
-            {adminOnlyItems.map((item) => (
+            {systemOnlyItems.map((item) => (
               <NavItem key={item.to} {...item} onClick={onNav} />
             ))}
           </>

@@ -31,7 +31,7 @@ export function buildUserFromAccessToken(token) {
     email: payload.email,
     role: payload.role,
     institutionId: payload.institutionId,
-    username: payload.email || 'User',
+    username: payload.username || payload.Username || payload.name || 'User',
   }
 }
 

@@ -1,32 +1,37 @@
-import { BookOpen, Users, BookMarked, CalendarClock, AlertTriangle, TrendingUp } from 'lucide-react'
+import { BookOpen, Users, BookMarked, CalendarClock, AlertTriangle, TrendingUp, Building2 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { booksApi, membersApi, loansApi, reservationsApi } from '../../api'
+import { booksApi, membersApi, loansApi, reservationsApi, systemApi } from '../../api'
 import { StatCard, Card, Skeleton } from '../../components/ui'
 import { PageHeader } from '../../components/layout/PageHeader'
 import { Badge } from '../../components/ui'
 import { statusColors, formatDate } from '../../utils'
 import { useAuthStore } from '../../store/authStore'
 
-function useStats() {
+function useStats(isSystem) {
   const books = useQuery({
     queryKey: ['books', { page: 0, size: 1 }],
     queryFn: () => booksApi.list({ page: 0, size: 1 }),
+    enabled: !isSystem,
   })
   const members = useQuery({
     queryKey: ['members', { page: 0, size: 1 }],
     queryFn: () => membersApi.list({ page: 0, size: 1 }),
+    enabled: !isSystem,
   })
   const loans = useQuery({
     queryKey: ['loans', { page: 0, size: 5 }],
     queryFn: () => loansApi.list({ page: 0, size: 5 }),
+    enabled: !isSystem,
   })
   const lateLoans = useQuery({
     queryKey: ['loans', { status: 'LATE', page: 0, size: 1 }],
     queryFn: () => loansApi.list({ status: 'LATE', page: 0, size: 1 }),
+    enabled: !isSystem,
   })
   const reservations = useQuery({
     queryKey: ['reservations', { page: 0, size: 1 }],
     queryFn: () => reservationsApi.list({ page: 0, size: 1 }),
+    enabled: !isSystem,
   })
 
   return { books, members, loans, lateLoans, reservations }
@@ -46,7 +51,114 @@ function StatSkeleton() {
 
 export function DashboardPage() {
   const { user } = useAuthStore()
-  const { books, members, loans, lateLoans, reservations } = useStats()
+  const isSystem = user?.role === 'SYSTEM'
+  const { books, members, loans, lateLoans, reservations } = useStats(isSystem)
+
+  const systemStats = useQuery({
+    queryKey: ['system-dashboard-stats'],
+    queryFn: () => systemApi.getDashboardStats(),
+    enabled: isSystem,
+    select: (res) => res?.data?.data,
+  })
+
+  if (isSystem) {
+    const stats = systemStats.data || {}
+    return (
+      <div>
+        <PageHeader
+          title={`Welcome back, ${user?.username || 'DevOne'} ⚙️`}
+          subtitle="Library Management System Global Administration Dashboard."
+        />
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-8">
+          {systemStats.isLoading ? <StatSkeleton /> : (
+            <StatCard
+              label="Total Institutions"
+              value={stats.totalInstitutions ?? '—'}
+              icon={<Building2 size={20} />}
+              color="primary"
+            />
+          )}
+          {systemStats.isLoading ? <StatSkeleton /> : (
+            <StatCard
+              label="Active Inst."
+              value={stats.activeInstitutions ?? '—'}
+              icon={<Building2 size={20} />}
+              color="blue"
+            />
+          )}
+          {systemStats.isLoading ? <StatSkeleton /> : (
+            <StatCard
+              label="Suspended Inst."
+              value={stats.suspendedInstitutions ?? '—'}
+              icon={<AlertTriangle size={20} />}
+              color="red"
+            />
+          )}
+          {systemStats.isLoading ? <StatSkeleton /> : (
+            <StatCard
+              label="Total Users"
+              value={stats.totalUsers ?? '—'}
+              icon={<Users size={20} />}
+              color="amber"
+            />
+          )}
+          {systemStats.isLoading ? <StatSkeleton /> : (
+            <StatCard
+              label="System Admins"
+              value={stats.systemAdmins ?? '—'}
+              icon={<Users size={20} />}
+              color="primary"
+            />
+          )}
+        </div>
+
+        {/* Actions & Information */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div className="xl:col-span-2">
+            <Card className="h-full">
+              <h2 className="text-base font-semibold text-text-primary mb-5">System Management Overview</h2>
+              <p className="text-sm text-text-secondary leading-relaxed mb-6">
+                As a System Administrator, you have complete control over all tenant institutions registered in the Library Management System. 
+                You can suspend offending institutions, inspect system-wide user credentials, and perform database/administrative audits.
+              </p>
+              <div className="bg-surface border border-border p-4 rounded-xl text-xs space-y-2 font-mono text-text-secondary">
+                <p><span className="font-semibold text-primary">System Base URL:</span> http://localhost:8080/api/v1</p>
+                <p><span className="font-semibold text-primary">Role:</span> {user?.role}</p>
+                <p><span className="font-semibold text-primary">Logged in as:</span> {user?.email}</p>
+              </div>
+            </Card>
+          </div>
+
+          <Card>
+            <h2 className="text-base font-semibold text-text-primary mb-5">Quick Actions</h2>
+            <div className="space-y-2">
+              {[
+                { label: 'Manage Institutions', href: '/system/institutions', desc: 'Activate, view, or suspend tenant library groups' },
+                { label: 'Manage Global Users', href: '/system/users', desc: 'Create system admins or tenant user accounts' },
+                { label: 'View Audit Logs', href: '/audit-logs', desc: 'Security actions and activity logs' },
+              ].map((action) => (
+                <a
+                  key={action.href}
+                  href={action.href}
+                  className="flex items-start gap-3 p-3 rounded-xl hover:bg-surface transition-colors group"
+                >
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                    <TrendingUp size={14} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-text-primary">{action.label}</p>
+                    <p className="text-xs text-text-secondary">{action.desc}</p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </Card>
+        </div>
+      </div>
+    )
+  }
 
   const recentLoans = loans.data?.data?.data?.content || []
 

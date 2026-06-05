@@ -204,3 +204,16 @@ export const bookAuthorsApi = {
 export const auditLogsApi = {
   list: (params) => api.get('/audit-logs', { params }),
 }
+
+// ─── System Administration ───────────────────────────────────────────────────
+export const systemApi = {
+  getDashboardStats: () => api.get('/system/dashboard-stats'),
+  listInstitutions: (params) => api.get('/system/institutions', { params }),
+  updateInstitutionStatus: (publicId, status) =>
+    api.patch(`/system/institutions/${publicId}/status`, { status }),
+  listUsers: (params) => api.get('/system/users', { params }),
+  createUser: (data) => api.post('/system/users', data),
+  updateUser: (publicId, data) => api.patch(`/system/users/${publicId}`, data),
+  deleteUser: (publicId) => api.delete(`/system/users/${publicId}`),
+}
+

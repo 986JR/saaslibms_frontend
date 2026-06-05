@@ -11,6 +11,8 @@ import { LoansPage } from './pages/loans/LoansPage'
 import { ReservationsPage } from './pages/reservations/ReservationsPage'
 import { UsersPage } from './pages/users/UsersPage'
 import { AuditLogsPage } from './pages/audit-logs/AuditLogsPage'
+import { SystemInstitutionsPage } from './pages/system/SystemInstitutionsPage'
+import { SystemUsersPage } from './pages/system/SystemUsersPage'
 import { NotFoundPage } from './pages/errors'
 import { AuthInitializer } from './components/AuthInitializer'
 import { BookAuthorsPage } from './pages/book-authors/BookAuthorsPage'
@@ -38,6 +40,8 @@ export default function App() {
             <Route path="/reservations" element={<ReservationsPage />} />
             <Route path="/users" element={<UsersPage />} />
             <Route path="/audit-logs" element={<AuditLogsPage />} />
+            <Route path="/system/institutions" element={<SystemInstitutionsPage />} />
+            <Route path="/system/users" element={<SystemUsersPage />} />
           </Route>
 
           {/* Redirects */}

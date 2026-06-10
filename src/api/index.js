@@ -217,3 +217,44 @@ export const systemApi = {
   deleteUser: (publicId) => api.delete(`/system/users/${publicId}`),
 }
 
+// Phase 22 Platform Analytics (SYSTEM only)
+export const analyticsApi = {
+  getSummary: () => api.get('/system/analytics/summary'),
+  getInstitutionActivity: () => api.get('/system/analytics/institutions/activity'),
+  getInstitutionGrowth: (days = 30) =>
+    api.get('/system/analytics/institutions/growth', { params: { days } }),
+  getTopBorrowedBooks: (params = {}) =>
+    api.get('/system/analytics/books/top-borrowed', { params }),
+  getTopReservedBooks: (params = {}) =>
+    api.get('/system/analytics/books/top-reserved', { params }),
+  getLeastBorrowedBooks: (limit = 10) =>
+    api.get('/system/analytics/books/least-borrowed', { params: { limit } }),
+  getLoansTrend: (days = 30) =>
+    api.get('/system/analytics/loans/trend', { params: { days } }),
+  getLoanStatusDistribution: () =>
+    api.get('/system/analytics/loans/status-distribution'),
+  getReservationsTrend: (days = 30) =>
+    api.get('/system/analytics/reservations/trend', { params: { days } }),
+  getDailyActiveUsers: (days = 30) =>
+    api.get('/system/analytics/users/active-daily', { params: { days } }),
+  getTopActiveUsers: (limit = 10) =>
+    api.get('/system/analytics/users/top-active', { params: { limit } }),
+  getRateLimitViolations: () =>
+    api.get('/system/analytics/traffic/rate-limit-violations'),
+  getTopViewedBooks: (params = {}) =>
+    api.get('/system/analytics/books/top-viewed', { params }),
+  getBookViewsTrend: (days = 30) =>
+    api.get('/system/analytics/books/views-trend', { params: { days } }),
+  getTrafficSummary: () => api.get('/system/analytics/traffic/summary'),
+  getTopEndpoints: (params = {}) =>
+    api.get('/system/analytics/traffic/top-endpoints', { params }),
+  getSlowestEndpoints: (params = {}) =>
+    api.get('/system/analytics/traffic/slowest-endpoints', { params }),
+  getErrorRates: (days = 7) =>
+    api.get('/system/analytics/traffic/error-rates', { params: { days } }),
+  getTrafficTrend: (days = 30) =>
+    api.get('/system/analytics/traffic/trend', { params: { days } }),
+  getJvmMetrics: () => api.get('/system/analytics/infrastructure/jvm'),
+  getDatabaseMetrics: () => api.get('/system/analytics/infrastructure/database'),
+  getRedisMetrics: () => api.get('/system/analytics/infrastructure/redis'),
+}

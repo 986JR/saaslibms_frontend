@@ -16,6 +16,7 @@ import {
   Link2,         // ← new icon for Book-Author Links
   ClipboardList,
   Building2,
+  BarChart3,
 } from 'lucide-react'
 import { cn } from '../../utils'
 import { useAuthStore } from '../../store/authStore'
@@ -40,6 +41,7 @@ const adminOnlyItems = [
 
 const systemOnlyItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/analytics', icon: BarChart3, label: 'Analytics' },
   { to: '/system/institutions', icon: Building2, label: 'Institutions' },
   { to: '/system/users', icon: Users, label: 'All Users' },
   { to: '/audit-logs', icon: ClipboardList, label: 'Audit Logs' },

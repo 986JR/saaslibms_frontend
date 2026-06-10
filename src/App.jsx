@@ -18,6 +18,18 @@ import { AuthInitializer } from './components/AuthInitializer'
 import { BookAuthorsPage } from './pages/book-authors/BookAuthorsPage'
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage'
 import { ResetPasswordPage }  from './pages/auth/ResetPasswordPage'
+import { AnalyticsPage } from './pages/analytics/AnalyticsPage'
+import { useAuthStore } from './store/authStore'
+
+function RequireSystem({ children }) {
+  const { user } = useAuthStore()
+
+  if (user?.role !== 'SYSTEM') {
+    return <Navigate to="/dashboard" replace />
+  }
+
+  return children
+}
 
 export default function App() {
   return (
@@ -40,6 +52,7 @@ export default function App() {
             <Route path="/reservations" element={<ReservationsPage />} />
             <Route path="/users" element={<UsersPage />} />
             <Route path="/audit-logs" element={<AuditLogsPage />} />
+            <Route path="/analytics" element={<RequireSystem><AnalyticsPage /></RequireSystem>} />
             <Route path="/system/institutions" element={<SystemInstitutionsPage />} />
             <Route path="/system/users" element={<SystemUsersPage />} />
           </Route>

@@ -600,7 +600,6 @@ export function AnalyticsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Platform Analytics"
-        subtitle="Product analytics, traffic monitoring, and live infrastructure metrics for SYSTEM administrators."
         action={
           <div className="w-36">
             <Select value={days} onChange={(e) => setDays(Number(e.target.value))} title="Analytics time window">
@@ -624,6 +623,7 @@ export function AnalyticsPage() {
       {activeTab === 'resources' && <ResourcesPanel days={days} />}
       {activeTab === 'traffic' && <TrafficPanel days={days} />}
       {activeTab === 'infrastructure' && <InfrastructurePanel />}
-    </div>
+    </div> 
+    
   )
 }

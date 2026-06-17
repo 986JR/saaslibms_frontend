@@ -43,7 +43,7 @@ export function RegisterPage() {
     if (errors[name]) setErrors(p => ({ ...p, [name]: '' }))
   }
 
-  // ── Step 1 ────────────────────────────────────────────────────────────────
+  //  Step 1 
   async function handleStep1(e) {
     e.preventDefault()
     const errs = {}

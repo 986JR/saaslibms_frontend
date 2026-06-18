@@ -1385,7 +1385,8 @@ export function LoginPage() {
     onClick={() => setShowLogin(false)}
   >
     Forgot password?
-  </Link>
+  </Link> 
+  
 </div>
                 <button type="submit" className="lp-submit-btn" disabled={loginLoading}>
                   {loginLoading ? (

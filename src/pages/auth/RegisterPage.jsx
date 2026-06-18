@@ -145,7 +145,7 @@ export function RegisterPage() {
         {/* Card */}
         <div className="bg-white rounded-2xl border border-border shadow-card p-8 animate-fade-in">
 
-          {/* Step 1 — Register */}
+          {/* Step 1 - Register */}
           {step === 1 && (
             <>
               <div className="mb-6">
@@ -200,7 +200,7 @@ export function RegisterPage() {
             </>
           )}
 
-          {/* Step 2 — Verify */}
+          {/* Step 2 — Verify*/}
           {step === 2 && (
             <>
               <div className="mb-6">
@@ -230,7 +230,7 @@ export function RegisterPage() {
             </>
           )}
 
-          {/* Step 3 — Setup Admin */}
+          {/* Step 3 — Setup Admin,  */}
           {step === 3 && (
             <>
               <div className="mb-6">

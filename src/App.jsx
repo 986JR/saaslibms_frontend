@@ -1,6 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
+import { RegisterSuccessPage } from './pages/auth/RegisterSuccessPage'
+import { SetupAdminPage } from './pages/auth/SetupAdminPage'
+import { VerifyEmailPage } from './pages/auth/VerifyEmailPage'
 import { DashboardLayout } from './components/layout/DashboardLayout'
 import { DashboardPage } from './pages/dashboard/DashboardPage'
 import { BooksPage } from './pages/books/BooksPage'
@@ -39,6 +42,11 @@ export default function App() {
           {/* Public */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/register/success" element={<RegisterSuccessPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
+          <Route path="/setup-admin" element={<SetupAdminPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
           {/* Protected Dashboard */}
           <Route element={<DashboardLayout />}>
@@ -60,12 +68,6 @@ export default function App() {
           {/* Redirects */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<NotFoundPage />} />
-
-          {/* Public */}
-<Route path="/login" element={<LoginPage />} />
-<Route path="/register" element={<RegisterPage />} />
-<Route path="/forgot-password" element={<ForgotPasswordPage />} />
-<Route path="/reset-password"  element={<ResetPasswordPage />} />
         </Routes> 
       </BrowserRouter>
     </AuthInitializer>

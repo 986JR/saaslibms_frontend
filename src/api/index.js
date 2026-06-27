@@ -101,8 +101,10 @@ api.interceptors.response.use(
 export const authApi = {
   registerInstitution: (data) =>
     api.post('/auth/institution/register', data),
-  verifyInstitution: (data) =>
-    api.post('/auth/institution/verify', data),
+  verifyInstitutionEmail: (token) =>
+    api.get('/auth/institution/verify-email', { params: { token } }),
+  verifyInstitutionDns: (data) =>
+    api.post('/auth/institution/verify-dns', data),
   setupAdmin: (data) =>
     api.post('/auth/institution/setup-admin', data),
   login: (data) =>

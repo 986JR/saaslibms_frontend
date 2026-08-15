@@ -1396,6 +1396,7 @@ export function LoginPage() {
                   )}
                 </button>
               </form>
+              //cleaning code
 
               <p className="lp-modal-footer">
                 Don't have an account? <Link to="/register" onClick={() => setShowLogin(false)}>Register your institution</Link>
